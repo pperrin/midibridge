@@ -20,3 +20,38 @@ A single RTMidi virtual port.
 
 ## Dependencies
 This took ages of digging around/experimenting, along the way I did all of the following(!)
+
+wget https://bootstrap.pypa.io/get-pip.py
+chmod 755 get-pip.py
+sudo python get-pip.py
+sudo pip install mido
+#sudo apt-get install libportmidi-dev
+sudo pip install python-rtmidi
+...
+
+sudo apt-get install build-essential
+sudo apt-get install libasound2-dev
+sudo apt-get install librtmidi1
+sudo apt-get install libjack-jackd2-dev
+sudo pip install python-rtmidi
+---
+sudo apt-get install librtaudio-dev
+sudo apt-get install librtmidi-dev
+sudo pip install python-rtmidi
+....
+
+wget http://pp.com.mx/python/alsaseq/alsaseq-0.4.1.tar.gz
+tar xf alsaseq-0.4.1.tar.gz
+cd alsaseq-0.4.1
+python setup.py build
+
+---
+sudo apt-get install python-dev
+(needed to compile some of the other python stuff that didn't work(!).
+---
+python setup.py build
+
+
+
+
+
