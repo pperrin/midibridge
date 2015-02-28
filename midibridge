@@ -1,0 +1,79 @@
+#!/usr/bin/python2
+
+#http://www.midi.org/techspecs/midimessages.php
+
+# Send to virtual Midi port
+from mido import open_output, set_backend, Backend
+def midisender(q):
+    #print 'sender'
+    rtmidi = Backend('mido.backends.rtmidi')
+    set_backend('mido.backends.rtmidi')
+    port = rtmidi.open_output("MidiWifiIn",virtual=True)
+    while 1:
+        m=q.get()
+        print m
+        port.send(m)
+
+# Monitor for DS messages
+from mido import parse
+import socket
+def dslistener(q):
+    port = 9000
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind(("", port)) 
+    #print "waiting on port:", port
+    while 1:
+        data, addr = s.recvfrom(1024)
+        q.put(parse(data))
+
+# Monitor for WS (websocket)
+from mido.sockets import connect, PortServer
+def wslistener(q):
+    for message in PortServer('192.168.1.29', 5001):
+       q.put(message)
+
+# Monitor for OSC messags
+import liblo, sys
+def osclistener(q):
+    try:
+        server = liblo.Server(8000)
+    except liblo.ServerError, err:
+        print str(err)
+        exit()
+    def string_callback(path,args):
+        i, f = args
+        print "%s, %d, %s" % (path, i, f)
+    def fallback(path, args, types, src):
+        print "got unknown message '%s' from '%s'" % (path, src.url)
+        for a, t in zip(args, types):
+            print "argument of type '%s': %s" % (t, a)
+    #server.add_method("/midi/cc/",None ,string_callback)
+    #server.add_method("/midi/pc/",None,string_callback)
+    # register a fallback for unhandled messages
+    server.add_method(None, None, fallback)
+    # loop and dispatch messages every 100ms
+    while True:
+        server.recv(100)
+
+from multiprocessing import Process, Queue
+if __name__ == '__main__':
+    q = Queue()
+    p1 = Process(target=midisender, args=(q,))
+    p1.start()
+    p2 = Process(target=osclistener, args=(q,))
+    p3 = Process(target=dslistener, args=(q,))
+    p4 = Process(target=wslistener, args=(q,))
+    p2.start()
+    p3.start()
+    p4.start()
+    raw_input('press enter')
+    #q.put(['quit']) 
+    p4.terminate()
+    p3.terminate()
+    p2.terminate()
+    p1.terminate()
+    p4.join
+    p3.join
+    p2.join
+    p1.join
+    exit()
