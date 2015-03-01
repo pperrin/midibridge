@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 
+#List of messags to consider for OSC translations(!)
 #http://www.midi.org/techspecs/midimessages.php
 
 # Send to virtual Midi port
@@ -34,21 +35,41 @@ def wslistener(q):
 
 # Monitor for OSC messags
 import liblo, sys
+from mido import Message
 def osclistener(q):
     try:
         server = liblo.Server(8000)
     except liblo.ServerError, err:
         print str(err)
         exit()
-    def string_callback(path,args):
-        i, f = args
-        print "%s, %d, %s" % (path, i, f)
     def fallback(path, args, types, src):
-        print "got unknown message '%s' from '%s'" % (path, src.url)
-        for a, t in zip(args, types):
-            print "argument of type '%s': %s" % (t, a)
-    #server.add_method("/midi/cc/",None ,string_callback)
-    #server.add_method("/midi/pc/",None,string_callback)
+        # parse message
+        msg=['note_off',
+            'note_on',
+            'polytouch',
+            'control_change',
+            'program_change',
+            'aftertouch',
+            'pitchwheel',
+            'sysex',
+            'quarter_frame',
+            'songpos',
+            'song_select',
+            'tune_request' ,
+            'clock' ,
+            'start' ,
+            'continue' ,
+            'stop' ,
+            'active_sensing' ,
+            'reset']
+        cmd = path.split('/')
+        if len(cmd)==4 and cmd[0:2]==['','midi'] and cmd[2] in msg:
+            m = Message(cmd[2],note=int(float(cmd[3])))
+            print m
+        else:
+            print "got unknown message '%s' from '%s'" % (path, src.url)
+            for a, t in zip(args, types):
+                print "argument of type '%s': %s" % (t, a)
     # register a fallback for unhandled messages
     server.add_method(None, None, fallback)
     # loop and dispatch messages every 100ms
