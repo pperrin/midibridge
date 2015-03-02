@@ -15,7 +15,14 @@ There are many 'standards' for MIDI over WiFi, this script listens for:-
 ### Websockets
     * WS:\<addr\>:\<port\>
 ###OSC - open sound control
-OSC can transmit MIDI messages, but tends to be used to transmit user defined text message. I am planning on using messages in the format /MIDI/PC for program control, /MIDI/CC for control changes etc... Translating these in the script to be fowarded as real midi.
+OSC can transmit binary MIDI messages (I think!), but tends to be used to transmit user defined text message.
+
+    The script currently recognises messages in the format
+    /midi/note_on/<note>
+    /midi/note_off/<note>
+    /midi/polytouch/<note>
+    /midi/control_change/<control>/<value>
+    /program_change/<program>
 
 ## Outgoing Format
 A single RTMidi virtual port.
