@@ -1,8 +1,5 @@
 #!/usr/bin/python2
 
-#List of messags to consider for OSC translations(!)
-#http://www.midi.org/techspecs/midimessages.php
-
 # Send to virtual Midi port
 from mido import open_output, set_backend, Backend
 def midisender(q):
@@ -44,28 +41,31 @@ def osclistener(q):
         exit()
     def fallback(path, args, types, src):
         # parse message
-        msg=['note_off',
-            'note_on',
-            'polytouch',
-            'control_change',
-            'program_change',
-            'aftertouch',
-            'pitchwheel',
-            'sysex',
-            'quarter_frame',
-            'songpos',
-            'song_select',
-            'tune_request' ,
-            'clock' ,
-            'start' ,
-            'continue' ,
-            'stop' ,
-            'active_sensing' ,
-            'reset']
+        msg={'note_off':'note',
+            'note_on':'note',
+            'polytouch':'note',
+            'control_change':('control','value'),
+            'program_change':'program',
+            'aftertouch':'value',
+            'pitchwheel':'pitch',
+            'sysex':'',
+            'quarter_frame':'',
+            'songpos':'pos',
+            'song_select':'',
+            'tune_request' :'',
+            'clock' :'',
+            'start' :'',
+            'continue' :'',
+            'stop' :'',
+            'active_sensing' :'',
+            'reset':''}
         cmd = path.split('/')
-        if len(cmd)==4 and cmd[0:2]==['','midi'] and cmd[2] in msg:
-            m = Message(cmd[2],note=int(float(cmd[3])))
-            print m
+        if len(cmd)>3 and cmd[0:2]==['','midi'] and cmd[2] in msg and msg[cmd[2]]<>"":
+            if type((1,2))==type(msg[cmd[2]]):
+              m = Message(**{'type':cmd[2],msg[cmd[2]][0]:int(float(cmd[3])), msg[cmd[2]][1]:int(float(cmd[4]))})
+            else:
+              m = Message(**{'type':cmd[2],msg[cmd[2]]:int(float(cmd[3]))})
+            q.put(m)
         else:
             print "got unknown message '%s' from '%s'" % (path, src.url)
             for a, t in zip(args, types):
